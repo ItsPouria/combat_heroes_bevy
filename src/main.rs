@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 
 use bevy::prelude::*;
-use bevy::window::CursorOptions;
+use bevy::window::{CursorOptions, PrimaryWindow, WindowMode};
 use bevy::{
     camera::visibility::RenderLayers, color::palettes::tailwind,
     input::mouse::AccumulatedMouseMotion, light::NotShadowCaster, prelude::*,
@@ -9,9 +9,19 @@ use bevy::{
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_systems(Startup, spawn_view_model)
-        .add_systems(Update, capture_mouse)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                resizable: false,
+                mode: WindowMode::BorderlessFullscreen(
+                    MonitorSelection::Primary,
+                    //VideoModeSelection::Current,
+                ),
+                ..default()
+            }),
+            ..default()
+        }))
+        .add_systems(Startup, (spawn_view_model))
+        .add_systems(Update, (capture_mouse))
         .run();
 }
 
