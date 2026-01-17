@@ -20,7 +20,7 @@ fn main() {
             }),
             ..default()
         }))
-        .add_systems(Startup, (spawn_view_model))
+        .add_systems(Startup, (spawn_view_model, spawn_lights))
         .add_systems(Update, (capture_mouse))
         .run();
 }
@@ -87,6 +87,18 @@ fn spawn_view_model(
                 NotShadowCaster,
             ),
         ],
+    ));
+}
+
+fn spawn_lights(mut commands: Commands) {
+    commands.spawn((
+        PointLight {
+            color: Color::from(tailwind::ROSE_300),
+            shadows_enabled: true,
+            ..default()
+        },
+        Transform::from_xyz(-2.0, 4.0, 0.75),
+        RenderLayers::from_layers(&[DEFAULT_RENDER_LAYER, VIEW_MODEL_RENDER_LAYER]),
     ));
 }
 
