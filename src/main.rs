@@ -17,8 +17,8 @@ fn main() {
             }),
             ..default()
         }))
-        .add_systems(Startup, (spawn_view_model, spawn_lights))
-        .add_systems(Update, (capture_mouse, mouse_movement))
+        .add_systems(Startup, (spawn_view_model, spawn_lights, generate_dungeon))
+        .add_systems(Update, (mouse_movement))
         .run();
 }
 
@@ -43,6 +43,12 @@ impl Default for PlayerMovementSpeed {
     fn default() -> Self {
         Self(5.0)
     }
+}
+
+#[derive(Debug, Component)]
+struct RoomModule {
+    sockets: [i8; 4],
+    allowed_neighbours: [i8; 4],
 }
 
 const DEFAULT_RENDER_LAYER: usize = 0;
@@ -124,20 +130,17 @@ fn mouse_movement(
     }
 }
 
-fn player_movement() {}
-
-fn capture_mouse(
-    mut cursor_options: Single<&mut CursorOptions>,
-    mouse: Res<ButtonInput<MouseButton>>,
-    key: Res<ButtonInput<KeyCode>>,
+fn generate_dungeon(
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    if mouse.just_pressed(MouseButton::Left) {
-        cursor_options.visible = false;
-        cursor_options.grab_mode = bevy::window::CursorGrabMode::Locked;
-    }
+    let floor = meshes.add(Plane3d::new(Vec3::Y, Vec2::splat(1.0)));
+    let materials = materials.add(Color::WHITE);
 
-    if key.just_pressed(KeyCode::Escape) {
-        cursor_options.visible = true;
-        cursor_options.grab_mode = bevy::window::CursorGrabMode::None;
-    }
+    commands.spawn((
+        Mesh3d(floor),
+        MeshMaterial3d(materials.clone()),
+        Transform::from_xyz(0.0, 0.0, 3.0),
+    ));
 }
