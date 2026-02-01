@@ -1,5 +1,9 @@
 use avian3d::prelude::{Collider, RigidBody};
-use bevy::{camera::visibility::RenderLayers, color::palettes::css::SILVER, prelude::*};
+use bevy::{
+    camera::visibility::RenderLayers,
+    color::palettes::css::{RED, SILVER},
+    prelude::*,
+};
 
 use crate::plugins::player::VIEW_MODEL_RENDER_LAYER;
 
@@ -7,7 +11,7 @@ pub struct Testbed;
 
 impl Plugin for Testbed {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (setup_testbed, spawn_light));
+        app.add_systems(Startup, (setup_testbed, spawn_light, spawn_wall));
     }
 }
 pub static DEFAULT_RENDER_LAYER: usize = 0;
@@ -26,11 +30,9 @@ fn setup_testbed(
     commands.spawn((
         Mesh3d(meshes.add(floor)),
         MeshMaterial3d(materials.add(Color::from(SILVER))),
-        children![
-            RigidBody::Dynamic,
-            Collider::half_space(outward_normal),
-            Transform::from_xyz(0.0, 3.0, 0.0),
-        ],
+        RigidBody::Dynamic,
+        Collider::half_space(outward_normal),
+        Transform::from_xyz(0.0, 0.0, 0.0),
     ));
 }
 
@@ -45,6 +47,22 @@ fn spawn_light(mut commands: Commands) {
         },
         Transform::from_xyz(8.0, 16.0, 8.0),
         RenderLayers::from_layers(&[DEFAULT_RENDER_LAYER, VIEW_MODEL_RENDER_LAYER]),
+    ));
+}
+
+fn spawn_wall(
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let wall = Cuboid::new(1.0, 4.0, 6.0);
+    let wall_material = materials.add(Color::from(RED));
+    commands.spawn((
+        Mesh3d(meshes.add(wall)),
+        MeshMaterial3d(wall_material),
+        Transform::from_xyz(4.0, 0.5, 0.0),
+        RigidBody::Static,
+        Collider::cuboid(1.01, 4.01, 6.01),
     ));
 }
 
