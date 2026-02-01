@@ -13,8 +13,8 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_view_model)
-            .add_plugins(PhysicsPlugins::default());
-        //.add_systems(Update, mouse_movement);
+            .add_plugins(PhysicsPlugins::default())
+            .add_systems(Update, mouse_movement);
     }
 }
 
