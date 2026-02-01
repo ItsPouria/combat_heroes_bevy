@@ -30,7 +30,7 @@ impl Default for CameraSensitivity {
 #[derive(Component)]
 struct WorldModelCamera;
 
-const VIEW_MODEL_RENDER_LAYER: usize = 1;
+pub static VIEW_MODEL_RENDER_LAYER: usize = 1;
 
 // --- Systems ---
 fn spawn_view_model(

@@ -4,8 +4,9 @@ use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 mod plugins;
-use plugins::dungeon::DungeonPlugin;
 use plugins::player::PlayerPlugin;
+
+use crate::plugins::testbed::Testbed;
 
 fn main() {
     App::new()
@@ -21,7 +22,7 @@ fn main() {
             EguiPlugin::default(),
             WorldInspectorPlugin::new(),
             PlayerPlugin,
-            DungeonPlugin,
+            Testbed,
         ))
         .run();
 }
