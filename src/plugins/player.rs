@@ -1,3 +1,4 @@
+use avian3d::{PhysicsPlugins, math::Vector, prelude::Collider};
 use bevy::camera::visibility::RenderLayers;
 use bevy::color::palettes::tailwind;
 use bevy::input::mouse::AccumulatedMouseMotion;
@@ -5,12 +6,15 @@ use bevy::light::NotShadowCaster;
 use bevy::prelude::*;
 use std::f32::consts::{FRAC_PI_2, PI};
 
+use crate::plugins::character_controller::CharacterControllerBundle;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_view_model)
-            .add_systems(Update, mouse_movement);
+            .add_plugins(PhysicsPlugins::default());
+        //.add_systems(Update, mouse_movement);
     }
 }
 
@@ -46,6 +50,8 @@ fn spawn_view_model(
         CameraSensitivity::default(),
         Transform::from_xyz(0.0, 1.0, 0.0),
         Visibility::default(),
+        CharacterControllerBundle::new(Collider::capsule(0.4, 1.0), Vector::NEG_Y * 9.81 * 2.0)
+            .with_movement(30.0, 0.92, (30.0 as f32).to_radians()),
         children![
             (
                 WorldModelCamera,

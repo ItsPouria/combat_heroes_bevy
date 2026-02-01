@@ -6,6 +6,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 mod plugins;
 use plugins::player::PlayerPlugin;
 
+use crate::plugins::character_controller::CharacterControllerPlugin;
 use crate::plugins::testbed::Testbed;
 
 fn main() {
@@ -23,6 +24,7 @@ fn main() {
             WorldInspectorPlugin::new(),
             PlayerPlugin,
             Testbed,
+            CharacterControllerPlugin,
         ))
         .run();
 }

@@ -30,7 +30,7 @@ fn setup_testbed(
     commands.spawn((
         Mesh3d(meshes.add(floor)),
         MeshMaterial3d(materials.add(Color::from(SILVER))),
-        RigidBody::Dynamic,
+        RigidBody::Static,
         Collider::half_space(outward_normal),
         Transform::from_xyz(0.0, 0.0, 0.0),
     ));
@@ -65,4 +65,3 @@ fn spawn_wall(
         Collider::cuboid(1.01, 4.01, 6.01),
     ));
 }
-
