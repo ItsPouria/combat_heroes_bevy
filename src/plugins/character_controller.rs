@@ -5,7 +5,9 @@ use avian3d::{
         Position, RigidBody, Rotation, Sensor, ShapeCaster, ShapeHits,
     },
 };
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::{input::mouse::AccumulatedMouseMotion, prelude::*};
+
+use crate::plugins::player::{Player, WorldModelCamera};
 
 pub struct CharacterControllerPlugin;
 
@@ -15,6 +17,7 @@ impl Plugin for CharacterControllerPlugin {
             .add_systems(
                 Update,
                 (
+                    mouse_input,
                     keyboard_input,
                     update_grounded,
                     apply_gravity,
@@ -31,6 +34,15 @@ impl Plugin for CharacterControllerPlugin {
                 PhysicsSchedule,
                 kinematic_controller_collisions.in_set(NarrowPhaseSystems::Last),
             );
+    }
+}
+
+#[derive(Debug, Component, Deref, DerefMut)]
+pub struct CameraSensitivity(Vec2);
+
+impl Default for CameraSensitivity {
+    fn default() -> Self {
+        Self(Vec2::new(0.003, 0.002))
     }
 }
 
@@ -140,6 +152,32 @@ fn keyboard_input(
 
     if keyboard_input.pressed(KeyCode::ControlLeft) {
         movement_writer.write(MovementAction::IsCrouching(true));
+    }
+}
+
+fn mouse_input(
+    accumulated_mouse_motion: Res<AccumulatedMouseMotion>,
+    player: Single<(&mut Transform, &CameraSensitivity), With<Player>>,
+    mut camera: Query<&mut Transform, (With<Camera3d>, Without<Player>)>,
+) {
+    let (mut transform, camera_sensitivity) = player.into_inner();
+    let delta = accumulated_mouse_motion.delta;
+
+    if delta != Vec2::ZERO {
+        let delta_yaw = -delta.x * camera_sensitivity.x;
+        let delta_pitch = -delta.y * camera_sensitivity.y;
+
+        let (player_yaw, _, _) = transform.rotation.to_euler(EulerRot::YXZ);
+        let player_new_yaw = player_yaw + delta_yaw;
+
+        transform.rotation = Quat::from_euler(EulerRot::YXZ, player_new_yaw, 0.0, 0.0);
+
+        for mut camera_transform in camera.iter_mut() {
+            let (_, camera_pitch, _) = camera_transform.rotation.to_euler(EulerRot::YXZ);
+            const PITCH_LIMIT: f32 = FRAC_PI_2 - 0.01;
+            let camera_new_pitch = (camera_pitch + delta_pitch).clamp(-PITCH_LIMIT, PITCH_LIMIT);
+            camera_transform.rotation = Quat::from_euler(EulerRot::YXZ, 0.0, camera_new_pitch, 0.0);
+        }
     }
 }
 
