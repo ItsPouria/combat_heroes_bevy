@@ -27,10 +27,8 @@ pub static VIEW_MODEL_RENDER_LAYER: usize = 1;
 
 // --- Systems ---
 fn spawn_view_model(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let player_body = Capsule3d::new(0.2, 0.5);
     commands.spawn((
         Player,
-        Mesh3d(meshes.add(player_body)),
         CameraSensitivity::default(),
         Transform::from_xyz(0.0, 1.0, 0.0),
         Visibility::default(),

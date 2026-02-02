@@ -1,3 +1,5 @@
+use std::f32::consts::FRAC_PI_4;
+
 use avian3d::{
     math::*,
     prelude::{
@@ -136,22 +138,31 @@ impl CharacterControllerBundle {
 fn keyboard_input(
     mut movement_writer: MessageWriter<MovementAction>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
+    player: Single<&Transform, With<Player>>,
 ) {
     let up = keyboard_input.any_pressed([KeyCode::KeyW, KeyCode::ArrowUp]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
     let down = keyboard_input.any_pressed([KeyCode::KeyS, KeyCode::ArrowDown]);
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
 
-    let horizontal = right as i8 - left as i8;
-    let vertical = up as i8 - down as i8;
-    let direction = Vector2::new(horizontal as Scalar, vertical as Scalar).clamp_length_max(1.0);
+    let forward_input = up as i8 - down as i8;
+    let right_input = right as i8 - left as i8;
 
-    if direction != Vector2::ZERO {
-        movement_writer.write(MovementAction::Move(direction));
+    let forward_dir = player.forward();
+    let right_dir = player.right();
+
+    let mut move_direction =
+        (forward_dir * forward_input as f32) + (right_dir * right_input as f32);
+
+    move_direction.y = 0.0;
+    if let Some(normalized_dir) = move_direction.try_normalize() {
+        let direction_2d = Vector2::new(normalized_dir.x, normalized_dir.z);
+        movement_writer.write(MovementAction::Move(direction_2d));
     }
 
-    if keyboard_input.pressed(KeyCode::ControlLeft) {
-        movement_writer.write(MovementAction::IsCrouching(true));
+    if move_direction != Vec3::ZERO {
+        let direction_2d = Vector2::new(move_direction.x, move_direction.z);
+        movement_writer.write(MovementAction::Move(direction_2d));
     }
 }
 
@@ -174,7 +185,7 @@ fn mouse_input(
 
         for mut camera_transform in camera.iter_mut() {
             let (_, camera_pitch, _) = camera_transform.rotation.to_euler(EulerRot::YXZ);
-            const PITCH_LIMIT: f32 = FRAC_PI_2 - 0.01;
+            const PITCH_LIMIT: f32 = std::f32::consts::PI / 3.0;
             let camera_new_pitch = (camera_pitch + delta_pitch).clamp(-PITCH_LIMIT, PITCH_LIMIT);
             camera_transform.rotation = Quat::from_euler(EulerRot::YXZ, 0.0, camera_new_pitch, 0.0);
         }
@@ -222,7 +233,7 @@ fn movement(
             match event {
                 MovementAction::Move(direction) => {
                     linear_velocity.x += direction.x * movement_acceleration.0 * delta_time;
-                    linear_velocity.z -= direction.y * movement_acceleration.0 * delta_time;
+                    linear_velocity.z += direction.y * movement_acceleration.0 * delta_time;
                 }
                 MovementAction::IsCrouching(true) => {
                     if is_grounded {
