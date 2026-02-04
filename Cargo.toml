@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 bevy = "0.18.0"
 bevy-inspector-egui = "0.36"
+avian3d = "0.5"
